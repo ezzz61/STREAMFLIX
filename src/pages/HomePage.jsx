@@ -1,6 +1,6 @@
 import React from "react";
-import Header from "../components/Header/Header";
-import Movies from "../components/Movies";
+import Header from "../components/molecules/Header";
+import Movies from "../components/organisms/Movies";
 
 function HomePage() {
   return (

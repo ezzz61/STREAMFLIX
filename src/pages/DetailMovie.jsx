@@ -1,40 +1,59 @@
-import React from "react";
-import Navbar from "../components/Header/Navbar";
-import MovieCard from "../components/MovieCard";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import Carousel from "../components/Carousel";
-import CastCard from "../components/CastCard";
-import Logo from "../components/Header/Logo";
+import Carousel from "../components/atoms/Carousel";
+import CastCard from "../components/organisms/Casts/CastCard";
+import { getMovieDetails } from "../store/moviesSlice";
+import { numberFormatter } from "../utils/numberFormatter";
+import notfound404 from "../assets/404-poster.jpg";
+import axios from "axios";
 
 export default function DetailMovie() {
-  const smilarMovie = ["", "", "", "", "", "", ""];
-  const casts = ["", "", "", "", "", "", ""];
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const movie = useSelector((state) => state.movies.movieDetails);
+  const [casts, setCasts] = useState([]);
+
+  useEffect(() => {
+    const movieId = id.split("-")[0];
+    dispatch(getMovieDetails(movieId));
+    setCasts([]);
+    const getCasts = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${process.env.REACT_APP_API_KEY}`
+        );
+        setCasts(response.data.cast);
+        console.log(response.data.cast);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getCasts();
+  }, [id, dispatch]);
 
   return (
     <>
-      <header className="w-11/12 lg:w-8/12 mx-auto mt-5">
-        <Navbar />
-      </header>
-      <main className="w-11/12 lg:w-8/12 mx-auto mt-8 lg:mt-24">
-        <section className="lg:flex lg:gap-x-10">
-          <div className="sm:w-5/12 lg:w-5/12">
-            <img src="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/fb1ede65688027.5afcac81af5e6.jpg" alt="" />
+      <main className="w-11/12 xl:w-8/12 mx-auto mt-8 lg:mt-24">
+        <section className="md:flex md:gap-x-5 lg:gap-x-10">
+          {/* vover */}
+          <div className="sm:w-5/12 md:w-4/12 lg:w-5/12">
+            <img src={movie.poster} alt={movie.title} />
           </div>
-          <div className="w-12/12 lg:w-7/12 text-white">
+          {/* detail */}
+          <div className="w-12/12 md:w-8/12 lg:w-7/12 text-white">
             <div className="flex flex-col gap-y-2">
-              <h1 className=" text-3xl font-bold">AVENGER: INGINITY WAR</h1>
-              <span className=" font-semibold">RATING: 8.1</span>
-              <span className="text-gray-400 font-lightd">Duration: 120 m</span>
-              <p className="text-gray-400 font-light">Action, Comedy</p>
-              <p className="text-yellow-400 text-xl font-semibold">Price : 20.000</p>
+              <h1 className=" text-3xl font-bold">{movie.title}</h1>
+              <span className=" font-semibold">RATING: {movie.rating}</span>
+              <span className="text-gray-400 font-lightd">Duration: {movie.duration} m</span>
+              <p className="text-gray-400 font-light">{movie.genre?.map((genre) => genre.name + " ")}</p>
+              <p className="text-yellow-400 text-xl font-semibold">Price : {numberFormatter(movie.price)}</p>
             </div>
             <div className="mt-8">
               <h4 className="text-2xl font-semibold">OVERVIEW</h4>
-              <p className="mb-8">
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Perspiciatis et tempora quaerat architecto quam
-                temporibus suscipit ipsa iste deserunt ipsum. Asperiores quidem fuga deleniti! Asperiores neque ipsa vel at
-                impedit esse, tempora, mollitia voluptates id, eum expedita dolore eveniet in?
-              </p>
+              <p className="mb-8">{movie.overview}</p>
               <div className="flex gap-x-2 items-center">
                 <Link to="/" className="bg-white text-gray-800 font-semibold text-lg py-2 px-4">
                   Back
@@ -43,11 +62,16 @@ export default function DetailMovie() {
                   Buy
                 </Link>
               </div>
-              <div className="w-11/12 lg:w-11/12 mx-auto">
+              {/* cast */}
+              <div className="hidden xl:block w-11/12 lg:w-11/12 mx-auto">
                 <Carousel title="Casts">
-                  {casts.map((cast) => (
+                  {casts?.map((cast) => (
                     <div className="pr-2 lg:pr-5">
-                      <CastCard />
+                      <CastCard
+                        name={cast.name}
+                        character={cast.character}
+                        image={cast.profile_path ? `https://image.tmdb.org/t/p/w200${cast.profile_path}` : notfound404}
+                      />
                     </div>
                   ))}
                 </Carousel>
@@ -55,6 +79,19 @@ export default function DetailMovie() {
             </div>
           </div>
         </section>
+        <div className="xl:hidden w-11/12 lg:w-11/12 mx-auto">
+          <Carousel title="Casts">
+            {casts?.map((cast) => (
+              <div className="pr-2 lg:pr-5">
+                <CastCard
+                  name={cast.name}
+                  character={cast.character}
+                  image={cast.profile_path ? `https://image.tmdb.org/t/p/w200${cast.profile_path}` : notfound404}
+                />
+              </div>
+            ))}
+          </Carousel>
+        </div>
         {/* <Carousel title="Smilar Movies">
           {smilarMovie.map((movie) => (
             <div className="pr-5">
@@ -70,15 +107,6 @@ export default function DetailMovie() {
           ))}
         </Carousel> */}
       </main>
-      <footer className="mt-24 py-8 bg-gray-700">
-        <div className="w-11/12 lg:w-8/12 mx-auto">
-          <Logo />
-          <p className="text-white">
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quam, eveniet aperiam! Tempora, necessitatibus dolorem non
-            minima quis voluptatum culpa fuga saepe dicta molestiae quidem. Autem obcaecati maiores quas repellendus dolorum.
-          </p>
-        </div>
-      </footer>
     </>
   );
 }

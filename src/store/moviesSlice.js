@@ -1,6 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import poster404 from "../assets/404-poster.jpg";
 import priceGenerator from "../utils/priceGenerator";
+import tmdbapi from "../api/tmdbapi";
 
 const genreData = [
   { name: "Action", id: 28 },
@@ -24,6 +25,26 @@ const genreData = [
   { name: "Western", id: 37 },
 ];
 
+export const getMovies = createAsyncThunk("movies/getMovies", async (state, dispatch) => {
+  try {
+    const res = await tmdbapi.get(`/now_playing?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&page=1&region=ID`);
+    const data = res.data.results;
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+export const getMovieDetails = createAsyncThunk("movies/getMovieDetails", async (id, dispatch) => {
+  try {
+    const res = await tmdbapi.get(`/${id}?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`);
+    const data = res.data;
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 const moviesSlice = createSlice({
   name: "movies",
   initialState: {
@@ -38,11 +59,16 @@ const moviesSlice = createSlice({
         price: null,
       },
     ],
+    movieDetails: {},
   },
-  reducers: {
-    setData(state, payload) {
+  extraReducers: {
+    [getMovies.pending]: (state, action) => {
+      state.isLoading = true;
+    },
+    [getMovies.fulfilled]: (state, action) => {
+      state.isLoading = false;
       let moviesData = [];
-      payload.payload.map((movie) =>
+      action.payload.map((movie) =>
         moviesData.push({
           id: movie.id,
           title: movie.title,
@@ -54,11 +80,27 @@ const moviesSlice = createSlice({
       );
       state.movies = moviesData;
     },
-    setIsloading(state, payload) {
-      state.isLoading = payload.payload;
+    [getMovies.rejected]: (state, action) => {
+      state.isError = true;
     },
-    setError(state, payload) {
-      state.isError = payload.payload;
+    [getMovieDetails.pending]: (state, action) => {
+      state.isLoading = true;
+    },
+    [getMovieDetails.fulfilled]: (state, action) => {
+      const data = action.payload;
+      state.movieDetails = {
+        id: data.id,
+        title: data.original_title,
+        genre: data.genres,
+        rating: data.vote_average,
+        poster: data.poster_path ? `http://image.tmdb.org/t/p/w500/${data.poster_path}` : poster404,
+        overview: data.overview,
+        duration: data.runtime,
+        price: priceGenerator(data.vote_average),
+      };
+    },
+    [getMovieDetails.rejected]: (state, action) => {
+      state.isError(true);
     },
   },
 });
