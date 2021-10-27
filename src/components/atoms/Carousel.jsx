@@ -46,7 +46,7 @@ export default function Carousel({ title, children, xs, sm, md, lg, xl, xxl }) {
     ],
   };
   return (
-    <section className="mt-8 po" style={{ cursor: "grab" }}>
+    <section className="mt-8 po">
       <h1 className="mt-12 mb-8 text-3xl font-bold text-white">{title}</h1>
       <Slider {...settings}>{children}</Slider>
     </section>

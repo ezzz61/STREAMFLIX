@@ -1,11 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { numberFormatter } from "../../../utils/numberFormatter";
+import { useSelector } from "react-redux";
 
 export default function MovieCard({ id, image, title, rating, genre, price }) {
   // ** change white space with "-"
   const titleSlug = title.replace(/\s/g, "-");
   const movieId = id + "-" + titleSlug;
+  const ownedMovies = useSelector((state) => state.user.ownedMovies);
+  const isOwned = ownedMovies.find((movie) => movie.id === id);
 
   return (
     <figure className="relative rounded-sm overflow-hidden">
@@ -21,7 +24,7 @@ export default function MovieCard({ id, image, title, rating, genre, price }) {
         {rating === 0 ? (
           <h1 className="font-bold">COMING SOON</h1>
         ) : (
-          <span className="text-gray-800 font-bold">Rp {numberFormatter(price)}</span>
+          <span className="text-gray-800 font-bold">{isOwned ? "OWNED" : `Rp ${numberFormatter(price)}`}</span>
         )}
       </div>
     </figure>

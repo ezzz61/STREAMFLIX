@@ -10,13 +10,18 @@ import notfound404 from "../assets/404-poster.jpg";
 import axios from "axios";
 import MovieCard from "../components/organisms/Movies/MovieCard";
 import Footer from "../components/molecules/Footer";
+import { userAction } from "../store/userSlice";
+import MovieCardSkeleton from "../components/organisms/Movies/MovieCardSkeleton";
 
 export default function DetailMovie() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const movie = useSelector((state) => state.movies.movieDetails.data);
   const similarMovies = useSelector((state) => state.movies.similarMovies.data);
+  const isSimilarMoviesLoading = useSelector((state) => state.movies.similarMovies.isLoading);
   const recommendationMovies = useSelector((state) => state.movies.recommendationMovies.data);
+  const isRecommenMovieLoading = useSelector((state) => state.movies.recommendationMovies.isLoading);
+  const ownedMovies = useSelector((state) => state.user.ownedMovies);
   const [casts, setCasts] = useState([]);
 
   useEffect(() => {
@@ -63,9 +68,17 @@ export default function DetailMovie() {
                 <Link to="/" className="bg-white text-gray-800 font-semibold text-lg py-2 px-4">
                   Back
                 </Link>
-                <Link to="/buy" className="bg-yellow-400 text-gray-800 font-semibold text-lg py-2 px-4" href="/">
-                  Buy
-                </Link>
+                {ownedMovies.find((ownedMovie) => ownedMovie.id === movie.id) ? (
+                  <h1 className="text-gray-500 font-bold">OWNED</h1>
+                ) : movie.rating !== 0 ? (
+                  <button
+                    onClick={() => dispatch(userAction.buyMovie(movie))}
+                    className="bg-yellow-400 text-gray-800 font-semibold text-lg py-2 px-4"
+                    href="/"
+                  >
+                    Buy
+                  </button>
+                ) : null}
               </div>
               {/* cast conditional , will render on min width 1024px*/}
               <div className="hidden xl:block w-11/12 lg:w-11/12 mx-auto">
@@ -99,32 +112,48 @@ export default function DetailMovie() {
           </Carousel>
         </div>
         <Carousel title="Similar Movies" xxl={6}>
-          {similarMovies.map((movie) => (
-            <div className="pr-5">
-              <MovieCard
-                id={movie.id}
-                title={movie.title}
-                image={movie.poster}
-                price={movie.price}
-                rating={movie.rating}
-                genre={movie.genre}
-              />
-            </div>
-          ))}
+          {isSimilarMoviesLoading
+            ? Array(7)
+                .fill(null)
+                .map((m, index) => (
+                  <div key={index} className="overflow-hidden">
+                    <MovieCardSkeleton />
+                  </div>
+                ))
+            : similarMovies.map((movie) => (
+                <div key={movie.id} className="pr-5">
+                  <MovieCard
+                    id={movie.id}
+                    title={movie.title}
+                    image={movie.poster}
+                    price={movie.price}
+                    rating={movie.rating}
+                    genre={movie.genre}
+                  />
+                </div>
+              ))}
         </Carousel>
         <Carousel title="Recommendations" xxl={6}>
-          {recommendationMovies.map((movie) => (
-            <div className="pr-5">
-              <MovieCard
-                id={movie.id}
-                title={movie.title}
-                image={movie.poster}
-                price={movie.price}
-                rating={movie.rating}
-                genre={movie.genre}
-              />
-            </div>
-          ))}
+          {isRecommenMovieLoading
+            ? Array(7)
+                .fill(null)
+                .map((m, index) => (
+                  <div key={index} className="overflow-hidden">
+                    <MovieCardSkeleton />
+                  </div>
+                ))
+            : recommendationMovies.map((movie) => (
+                <div key={movie.id} className="pr-5">
+                  <MovieCard
+                    id={movie.id}
+                    title={movie.title}
+                    image={movie.poster}
+                    price={movie.price}
+                    rating={movie.rating}
+                    genre={movie.genre}
+                  />
+                </div>
+              ))}
         </Carousel>
       </main>
       <Footer />
