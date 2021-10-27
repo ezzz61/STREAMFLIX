@@ -4,20 +4,26 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import Carousel from "../components/atoms/Carousel";
 import CastCard from "../components/organisms/Casts/CastCard";
-import { getMovieDetails } from "../store/moviesSlice";
+import { getMovieDetails, getRecommendationsMovies, getSimilarMovies } from "../store/moviesSlice";
 import { numberFormatter } from "../utils/numberFormatter";
 import notfound404 from "../assets/404-poster.jpg";
 import axios from "axios";
+import MovieCard from "../components/organisms/Movies/MovieCard";
+import Footer from "../components/molecules/Footer";
 
 export default function DetailMovie() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const movie = useSelector((state) => state.movies.movieDetails);
+  const movie = useSelector((state) => state.movies.movieDetails.data);
+  const similarMovies = useSelector((state) => state.movies.similarMovies.data);
+  const recommendationMovies = useSelector((state) => state.movies.recommendationMovies.data);
   const [casts, setCasts] = useState([]);
 
   useEffect(() => {
     const movieId = id.split("-")[0];
     dispatch(getMovieDetails(movieId));
+    dispatch(getSimilarMovies(movieId));
+    dispatch(getRecommendationsMovies(movieId));
     setCasts([]);
     const getCasts = async () => {
       try {
@@ -25,7 +31,6 @@ export default function DetailMovie() {
           `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${process.env.REACT_APP_API_KEY}`
         );
         setCasts(response.data.cast);
-        console.log(response.data.cast);
       } catch (error) {
         console.log(error);
       }
@@ -62,11 +67,11 @@ export default function DetailMovie() {
                   Buy
                 </Link>
               </div>
-              {/* cast */}
+              {/* cast conditional , will render on min width 1024px*/}
               <div className="hidden xl:block w-11/12 lg:w-11/12 mx-auto">
                 <Carousel title="Casts">
                   {casts?.map((cast) => (
-                    <div className="pr-2 lg:pr-5">
+                    <div key={cast.id} className="pr-2 lg:pr-5">
                       <CastCard
                         name={cast.name}
                         character={cast.character}
@@ -79,10 +84,11 @@ export default function DetailMovie() {
             </div>
           </div>
         </section>
+        {/* will render only on mobile screen when min width 1024px will be hide*/}
         <div className="xl:hidden w-11/12 lg:w-11/12 mx-auto">
           <Carousel title="Casts">
             {casts?.map((cast) => (
-              <div className="pr-2 lg:pr-5">
+              <div key={cast.id} className="pr-2 lg:pr-5">
                 <CastCard
                   name={cast.name}
                   character={cast.character}
@@ -92,21 +98,36 @@ export default function DetailMovie() {
             ))}
           </Carousel>
         </div>
-        {/* <Carousel title="Smilar Movies">
-          {smilarMovie.map((movie) => (
+        <Carousel title="Similar Movies" xxl={6}>
+          {similarMovies.map((movie) => (
             <div className="pr-5">
-              <MovieCard />
+              <MovieCard
+                id={movie.id}
+                title={movie.title}
+                image={movie.poster}
+                price={movie.price}
+                rating={movie.rating}
+                genre={movie.genre}
+              />
             </div>
           ))}
         </Carousel>
-        <Carousel title="Popular Movies">
-          {smilarMovie.map((movie) => (
+        <Carousel title="Recommendations" xxl={6}>
+          {recommendationMovies.map((movie) => (
             <div className="pr-5">
-              <MovieCard />
+              <MovieCard
+                id={movie.id}
+                title={movie.title}
+                image={movie.poster}
+                price={movie.price}
+                rating={movie.rating}
+                genre={movie.genre}
+              />
             </div>
           ))}
-        </Carousel> */}
+        </Carousel>
       </main>
+      <Footer />
     </>
   );
 }

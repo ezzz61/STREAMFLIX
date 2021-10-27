@@ -1,6 +1,6 @@
 const priceGenerator = (rating) => {
   let price;
-  if (rating <= 3) {
+  if (rating >= 1 && rating <= 3) {
     price = 3500;
     return price;
   }

@@ -45,28 +45,80 @@ export const getMovieDetails = createAsyncThunk("movies/getMovieDetails", async 
   }
 });
 
+export const getSimilarMovies = createAsyncThunk("movies/getSimilar", async (id, dispatch) => {
+  try {
+    const res = await tmdbapi.get(`/${id}/similar?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&page=1`);
+    const data = res.data;
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+export const getRecommendationsMovies = createAsyncThunk("movies/getRecommendation", async (id, dispatch) => {
+  try {
+    const res = await tmdbapi.get(`/${id}/recommendations?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&page=1`);
+    const data = res.data;
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 const moviesSlice = createSlice({
   name: "movies",
   initialState: {
-    isLoading: false,
-    isError: false,
-    movies: [
-      {
-        id: "",
-        title: "",
-        rating: null,
-        poster: "",
-        price: null,
-      },
-    ],
-    movieDetails: {},
+    movies: {
+      isLoading: false,
+      isError: false,
+      data: [
+        {
+          id: "",
+          title: "",
+          rating: null,
+          poster: "",
+          price: null,
+        },
+      ],
+    },
+    movieDetails: {
+      isLoading: false,
+      isError: false,
+      data: {},
+    },
+    similarMovies: {
+      isLoading: false,
+      isError: false,
+      data: [
+        {
+          id: "",
+          title: "",
+          rating: null,
+          poster: "",
+          price: null,
+        },
+      ],
+    },
+    recommendationMovies: {
+      isLoading: false,
+      isError: false,
+      data: [
+        {
+          id: "",
+          title: "",
+          rating: null,
+          poster: "",
+          price: null,
+        },
+      ],
+    },
   },
   extraReducers: {
+    // ** getMovies
     [getMovies.pending]: (state, action) => {
-      state.isLoading = true;
+      state.movies.isLoading = true;
     },
     [getMovies.fulfilled]: (state, action) => {
-      state.isLoading = false;
       let moviesData = [];
       action.payload.map((movie) =>
         moviesData.push({
@@ -78,17 +130,19 @@ const moviesSlice = createSlice({
           price: priceGenerator(movie.vote_average),
         })
       );
-      state.movies = moviesData;
+      state.movies.data = moviesData;
+      state.movies.isLoading = false;
     },
     [getMovies.rejected]: (state, action) => {
-      state.isError = true;
+      state.movies.isError = true;
     },
+    // ** getDetails
     [getMovieDetails.pending]: (state, action) => {
-      state.isLoading = true;
+      state.movieDetails.isLoading = true;
     },
     [getMovieDetails.fulfilled]: (state, action) => {
       const data = action.payload;
-      state.movieDetails = {
+      state.movieDetails.data = {
         id: data.id,
         title: data.original_title,
         genre: data.genres,
@@ -98,9 +152,54 @@ const moviesSlice = createSlice({
         duration: data.runtime,
         price: priceGenerator(data.vote_average),
       };
+      state.movieDetails.isLoading = false;
     },
     [getMovieDetails.rejected]: (state, action) => {
-      state.isError(true);
+      state.movieDetails.isError(true);
+    },
+    // ** get Similar movies
+    [getSimilarMovies.pending]: (state, action) => {
+      state.similarMovies.isLoading = true;
+    },
+    [getSimilarMovies.fulfilled]: (state, action) => {
+      let moviesData = [];
+      action.payload.results?.map((movie) =>
+        moviesData.push({
+          id: movie.id,
+          title: movie.title,
+          rating: movie.vote_average,
+          poster: movie.poster_path ? `http://image.tmdb.org/t/p/w500/${movie.poster_path}` : poster404,
+          genre: genreData.filter((genre) => movie.genre_ids.includes(genre.id)),
+          price: priceGenerator(movie.vote_average),
+        })
+      );
+      state.similarMovies.data = moviesData;
+      state.similarMovies.isLoading = false;
+    },
+    [getSimilarMovies.rejected]: (state, action) => {
+      state.similarMovies.isError(true);
+    },
+    // ** get Recommendation movies
+    [getRecommendationsMovies.pending]: (state, action) => {
+      state.recommendationMovies.isLoading = true;
+    },
+    [getRecommendationsMovies.fulfilled]: (state, action) => {
+      let moviesData = [];
+      action.payload.results?.map((movie) =>
+        moviesData.push({
+          id: movie.id,
+          title: movie.title,
+          rating: movie.vote_average,
+          poster: movie.poster_path ? `http://image.tmdb.org/t/p/w500/${movie.poster_path}` : poster404,
+          genre: genreData.filter((genre) => movie.genre_ids.includes(genre.id)),
+          price: priceGenerator(movie.vote_average),
+        })
+      );
+      state.recommendationMovies.data = moviesData;
+      state.recommendationMovies.isLoading = false;
+    },
+    [getRecommendationsMovies.rejected]: (state, action) => {
+      state.recommendationMovies.isError(true);
     },
   },
 });
