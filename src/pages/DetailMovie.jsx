@@ -133,28 +133,30 @@ export default function DetailMovie() {
                 </div>
               ))}
         </Carousel>
-        <Carousel title="Recommendations" xxl={6}>
-          {isRecommenMovieLoading
-            ? Array(7)
-                .fill(null)
-                .map((m, index) => (
-                  <div key={index} className="overflow-hidden">
-                    <MovieCardSkeleton />
+        {recommendationMovies.length && (
+          <Carousel title="Recommendations" xxl={6}>
+            {isRecommenMovieLoading
+              ? Array(7)
+                  .fill(null)
+                  .map((m, index) => (
+                    <div key={index} className="overflow-hidden">
+                      <MovieCardSkeleton />
+                    </div>
+                  ))
+              : recommendationMovies.map((movie) => (
+                  <div key={movie.id} className="pr-5">
+                    <MovieCard
+                      id={movie.id}
+                      title={movie.title}
+                      image={movie.poster}
+                      price={movie.price}
+                      rating={movie.rating}
+                      genre={movie.genre}
+                    />
                   </div>
-                ))
-            : recommendationMovies.map((movie) => (
-                <div key={movie.id} className="pr-5">
-                  <MovieCard
-                    id={movie.id}
-                    title={movie.title}
-                    image={movie.poster}
-                    price={movie.price}
-                    rating={movie.rating}
-                    genre={movie.genre}
-                  />
-                </div>
-              ))}
-        </Carousel>
+                ))}
+          </Carousel>
+        )}
       </main>
       <Footer />
     </>

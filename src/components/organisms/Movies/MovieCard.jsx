@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { numberFormatter } from "../../../utils/numberFormatter";
 import { useSelector } from "react-redux";
+import starIcon from "../../../assets/icons/star.svg";
 
 export default function MovieCard({ id, image, title, rating, genre, price }) {
   // ** change white space with "-"
@@ -17,7 +18,10 @@ export default function MovieCard({ id, image, title, rating, genre, price }) {
         <h1 className="font-bold">
           <Link to={`/${movieId}`}>{title}</Link>
         </h1>
-        <span className="text-yellow-400 font-semibold">{rating}</span>
+        <div className="text-yellow-400 font-semibold flex py-1 items-center gap-x-1">
+          <img width="18px" src={starIcon} alt="" />
+          <span>{rating}</span>
+        </div>
         <span className="font-light text-gray-300">{genre?.map((g) => g.name + " ")}</span>
       </div>
       <div className="absolute top-0 right-0 bg-yellow-400 py-1 px-2 rounded-bl-xl">

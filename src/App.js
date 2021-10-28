@@ -7,6 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Navbar from "./components/molecules/Navbar/Navbar";
 import { userAction } from "./store/userSlice";
+import Collections from "./pages/Collections";
 
 function App() {
   const wallet = useSelector((state) => state.user.wallet);
@@ -32,6 +33,7 @@ function App() {
     <Router>
       <Navbar />
       <Switch>
+        <Route path="/collections" component={Collections} />
         <Route path="/:id" component={DetailMovie} />
         <Route path="/" component={HomePage} />
       </Switch>

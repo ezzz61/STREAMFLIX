@@ -25,16 +25,6 @@ const genreData = [
   { name: "Western", id: 37 },
 ];
 
-export const getMovies = createAsyncThunk("movies/getMovies", async (state, dispatch) => {
-  try {
-    const res = await tmdbapi.get(`/now_playing?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&page=1&region=ID`);
-    const data = res.data.results;
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
-});
-
 export const getMovieDetails = createAsyncThunk("movies/getMovieDetails", async (id, dispatch) => {
   try {
     const res = await tmdbapi.get(`/${id}?api_key=${process.env.REACT_APP_API_KEY}&language=en-US`);
@@ -68,19 +58,6 @@ export const getRecommendationsMovies = createAsyncThunk("movies/getRecommendati
 const moviesSlice = createSlice({
   name: "movies",
   initialState: {
-    movies: {
-      isLoading: false,
-      isError: false,
-      data: [
-        {
-          id: "",
-          title: "",
-          rating: null,
-          poster: "",
-          price: null,
-        },
-      ],
-    },
     movieDetails: {
       isLoading: false,
       isError: false,
@@ -89,53 +66,15 @@ const moviesSlice = createSlice({
     similarMovies: {
       isLoading: false,
       isError: false,
-      data: [
-        {
-          id: "",
-          title: "",
-          rating: null,
-          poster: "",
-          price: null,
-        },
-      ],
+      data: [],
     },
     recommendationMovies: {
       isLoading: false,
       isError: false,
-      data: [
-        {
-          id: "",
-          title: "",
-          rating: null,
-          poster: "",
-          price: null,
-        },
-      ],
+      data: [],
     },
   },
   extraReducers: {
-    // ** getMovies
-    [getMovies.pending]: (state, action) => {
-      state.movies.isLoading = true;
-    },
-    [getMovies.fulfilled]: (state, action) => {
-      let moviesData = [];
-      action.payload.map((movie) =>
-        moviesData.push({
-          id: movie.id,
-          title: movie.title,
-          rating: movie.vote_average,
-          poster: movie.poster_path ? `http://image.tmdb.org/t/p/w500/${movie.poster_path}` : poster404,
-          genre: genreData.filter((genre) => movie.genre_ids.includes(genre.id)),
-          price: priceGenerator(movie.vote_average),
-        })
-      );
-      state.movies.data = moviesData;
-      state.movies.isLoading = false;
-    },
-    [getMovies.rejected]: (state, action) => {
-      state.movies.isError = true;
-    },
     // ** getDetails
     [getMovieDetails.pending]: (state, action) => {
       state.movieDetails.isLoading = true;
